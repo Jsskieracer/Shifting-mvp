@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shifting Session</title>
+</head>
+<body>
+    <h1>Welcome to Your Shifting Session</h1>
+    <p>Make sure you're in a quiet, comfortable space.</p>
+    <button id="startButton">Start Session</button>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', () => {
+            // This is where we'll add the text-to-speech functionality later
+            alert('Session is starting...');
+        });
+    </script>
+</body>
+</html>
