@@ -10,21 +10,29 @@
     <p>Make sure you're in a quiet, comfortable space.</p>
     <button id="startButton">Start Session</button>
 
+    <!-- Section to display logs -->
+    <div id="log" style="margin-top: 20px; font-weight: bold;"></div>
+
     <script>
+        function logMessage(message) {
+            // Display messages on the webpage for debugging
+            document.getElementById('log').innerText += message + "\n";
+        }
+
         document.getElementById('startButton').addEventListener('click', async () => {
-            console.log("Session starting...");
+            logMessage("Session starting...");
 
             // First instruction: Take a deep breath in and out
             await playText("Take a deep breath in and out.");
-            console.log("First message played");
+            logMessage("First message played");
 
             // Shorter pause for troubleshooting (5 seconds instead of 20)
             await new Promise(resolve => setTimeout(resolve, 5000));
-            console.log("Pause complete");
+            logMessage("Pause complete");
 
             // Second instruction: Ask what the user is noticing
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
-            console.log("Second message played");
+            logMessage("Second message played");
         });
 
         async function playText(text) {
