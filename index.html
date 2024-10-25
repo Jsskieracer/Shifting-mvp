@@ -260,32 +260,35 @@
         }
 
         async function analyzeWithGPT(transcription) {
-            try {
-                const gptResponse = await fetch(`https://api.openai.com/v1/completions`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`
-                    },
-                    body: JSON.stringify({
-                        model: "text-davinci-003",
-                        prompt: `Based on the following user response, determine if the user feels calm, has fewer thoughts, is feeling quiet or still. If any of these indicators are present, respond with "calm." Otherwise, respond with "not calm." Here is the user response:\n\n"${transcription}"`,
-                        max_tokens: 10,
-                        temperature: 0
-                    })
-                });
+    try {
+        const gptResponse = await fetch(`https://api.openai.com/v1/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`
+            },
+            body: JSON.stringify({
+                model: "text-davinci-003",
+                prompt: `Based on the following user response, determine if the user feels calm, has fewer thoughts, is feeling quiet or still. If any of these indicators are present, respond with "calm." Otherwise, respond with "not calm." Here is the user response:\n\n"${transcription}"`,
+                max_tokens: 10,
+                temperature: 0
+            })
+        });
 
-                const gptData = await gptResponse.json();
-                const gptText = gptData.choices[0].text.trim().toLowerCase();
-                logMessage("GPT analysis response: " + gptText);
+        const gptData = await gptResponse.json();
+        logMessage("Full GPT Response: " + JSON.stringify(gptData)); // Log the entire response for debugging
 
-                return gptText === "calm";
-            } catch (error) {
-                logMessage("Error analyzing response with GPT: " + error);
-                return false;  
-            }
-        }
+        const gptText = gptData.choices?.[0]?.text.trim().toLowerCase();
+        if (!gptText) throw new Error("No valid response from GPT"); // Error handling if 'choices' is undefined
 
+        logMessage("GPT analysis response: " + gptText);
+
+        return gptText === "calm";
+    } catch (error) {
+        logMessage("Error analyzing response with GPT: " + error);
+        return false;  // Default to "not calm" if GPT analysis fails
+    }
+}
         function blobToBase64(blob) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
