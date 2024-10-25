@@ -20,21 +20,31 @@
                 mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 console.log("Microphone access granted");
             } catch (error) {
-                console.error("Microphone access denied", error);
+                console.error("Microphone access denied:", error);
                 return;
             }
 
             await playText("Take a deep breath in and out.");
+            console.log("First prompt played.");
             await new Promise(resolve => setTimeout(resolve, 5000));
 
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
-            const userResponse = await captureUserInputDynamic();
+            console.log("Second prompt played.");
 
-            const responseText = checkForCalmResponse(userResponse) 
-                ? "Great, we’re complete." 
-                : await getGptResponse(userResponse);
-                
+            const userResponse = await captureUserInputDynamic();
+            console.log("User response captured:", userResponse);
+
+            let responseText;
+            if (checkForCalmResponse(userResponse)) {
+                responseText = "Great, we’re complete.";
+                console.log("Calm response detected, using default response.");
+            } else {
+                responseText = await getGptResponse(userResponse);
+                console.log("GPT response received:", responseText);
+            }
+
             await playText(responseText);
+            console.log("Final response played.");
         });
 
         async function playText(text) {
@@ -56,7 +66,7 @@
                 audio.src = `data:audio/mp3;base64,${audioContent}`;
                 audio.load();
                 await audio.play();
-                console.log("Audio is playing...");
+                console.log("Audio playback complete.");
             } catch (error) {
                 console.error("Error in playText function:", error);
             }
@@ -75,6 +85,7 @@
                 const analyser = audioContext.createAnalyser();
                 source.connect(analyser);
 
+                console.log("Starting real-time silence detection.");
                 const silenceDetectionPromise = new Promise(resolve => {
                     function detectSilence() {
                         const data = new Uint8Array(analyser.frequencyBinCount);
@@ -84,6 +95,7 @@
                         if (avgVolume > 10) {
                             if (!speakingDetected) {
                                 recorder.start();
+                                console.log("Speech detected, recording started.");
                                 speakingDetected = true;
                             }
                             clearTimeout(silenceTimeout);
@@ -91,6 +103,7 @@
                             silenceTimeout = setTimeout(() => {
                                 if (recorder.state === "recording") {
                                     recorder.stop();
+                                    console.log("Silence detected, recording stopped.");
                                     resolve();
                                 }
                             }, 3000);
@@ -120,7 +133,9 @@
                 });
 
                 const data = await response.json();
-                return data.results?.[0]?.alternatives?.[0]?.transcript || "No response detected.";
+                const transcription = data.results?.[0]?.alternatives?.[0]?.transcript || "No response detected.";
+                console.log("Transcription received:", transcription);
+                return transcription;
 
             } catch (error) {
                 console.error("Error capturing or transcribing audio:", error);
@@ -165,7 +180,9 @@
 
         function checkForCalmResponse(response) {
             const calmKeywords = ["calm", "peaceful", "relaxed", "quiet", "still"];
-            return calmKeywords.some(keyword => response.toLowerCase().includes(keyword));
+            const detected = calmKeywords.some(keyword => response.toLowerCase().includes(keyword));
+            console.log("Calm response check:", detected);
+            return detected;
         }
     </script>
 </body>
