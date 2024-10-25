@@ -30,13 +30,15 @@
             await new Promise(resolve => setTimeout(resolve, 5000));
             logMessage("Pause complete");
 
-            // Play the same instruction again to test the second playText call
-            await playText("Take a deep breath in and out.");
-            logMessage("Second message played");
+            // Attempt to play the second message and retry if necessary
+            await playTextWithRetry("Take a deep breath in and out.", 3);
+            logMessage("Second message played (or retries exhausted)");
         });
 
         async function playText(text) {
             try {
+                logMessage(`Requesting TTS for: "${text}"`);
+
                 // Google TTS API URL
                 const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`;
 
@@ -72,8 +74,21 @@
                     audio.onended = resolve;
                 });
             } catch (error) {
-                logMessage(`Error: ${error.message}`);
+                logMessage(`Error in playText: ${error.message}`);
+                throw error; // Re-throw to allow retry in playTextWithRetry
             }
+        }
+
+        async function playTextWithRetry(text, retries) {
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    await playText(text);
+                    return; // Success, exit the function
+                } catch (error) {
+                    logMessage(`Retrying... Attempt ${attempt} of ${retries}`);
+                }
+            }
+            logMessage("All retry attempts failed.");
         }
     </script>
 </body>
