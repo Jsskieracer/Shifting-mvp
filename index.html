@@ -65,7 +65,6 @@
                 const data = await response.json();
                 const audioContent = data.audioContent;
 
-                // Set and play audio, forcing playback through AirPods if connected
                 audio.src = `data:audio/mp3;base64,${audioContent}`;
                 audio.load();
                 await audio.play();
@@ -129,10 +128,29 @@
         }
 
         async function getGptResponse(userText) {
-            // Simulated GPT response (replace with actual GPT API call)
-            return new Promise(resolve => {
-                setTimeout(() => resolve("Great, we are complete"), 2000);
-            });
+            try {
+                const url = `https://api.openai.com/v1/completions`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`
+                    },
+                    body: JSON.stringify({
+                        model: "text-davinci-003",
+                        prompt: `User said: "${userText}". Respond with a gentle, supportive guidance based on the user's input.`,
+                        max_tokens: 50,
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+                return data.choices[0].text.trim();
+
+            } catch (error) {
+                console.error("Error in getGptResponse function:", error);
+                return "I'm here to support you. Let’s continue with some deep breaths.";
+            }
         }
     </script>
 </body>
