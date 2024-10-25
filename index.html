@@ -38,8 +38,8 @@
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
             console.log("Second message played");
 
-            // Wait a moment, then capture user input
-            await new Promise(resolve => setTimeout(resolve, 1500));  // 1.5-second delay before recording
+            // Ensure recording starts only after the entire prompt and additional wait time
+            await new Promise(resolve => setTimeout(resolve, 3000));  // 3-second delay before recording
             const userResponse = await captureUserInput();
             console.log(`User response: ${userResponse}`);
 
