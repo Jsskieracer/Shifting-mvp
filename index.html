@@ -107,12 +107,13 @@
             const userResponse = await captureDynamicInput();
             logMessage("User response captured: " + userResponse);
 
-            // Process response and play the appropriate audio
-            if (checkForCalmResponse(userResponse)) {
-                logMessage("Calm keyword detected in transcription.");
+            // Process response with GPT to determine if the user feels calm
+            const isCalm = await analyzeWithGPT(userResponse);
+            if (isCalm) {
+                logMessage("GPT analysis: User feels calm.");
                 await playAudioBuffer('Calm_response');
             } else {
-                logMessage("No calm keyword detected; playing Supportive_response.");
+                logMessage("GPT analysis: User does not feel calm.");
                 await playAudioBuffer('Supportive_response');
             }
 
@@ -200,6 +201,33 @@
             }
         }
 
+        async function analyzeWithGPT(transcription) {
+            try {
+                const gptResponse = await fetch(`https://api.openai.com/v1/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`
+                    },
+                    body: JSON.stringify({
+                        model: "text-davinci-003",
+                        prompt: `Based on the following user response, determine if the user feels calm and ready to proceed:\n\n"${transcription}"\n\nPlease respond with "calm" if the user feels calm, and "not calm" if the user does not feel calm.`,
+                        max_tokens: 10,
+                        temperature: 0
+                    })
+                });
+
+                const gptData = await gptResponse.json();
+                const gptText = gptData.choices[0].text.trim().toLowerCase();
+                logMessage("GPT analysis response: " + gptText);
+
+                return gptText === "calm";
+            } catch (error) {
+                logMessage("Error analyzing response with GPT: " + error);
+                return false;  // Default to "not calm" if GPT analysis fails
+            }
+        }
+
         function blobToBase64(blob) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -207,13 +235,6 @@
                 reader.onerror = reject;
                 reader.readAsDataURL(blob);
             });
-        }
-
-        function checkForCalmResponse(response) {
-            const calmKeywords = ["calm", "peaceful", "relaxed", "quiet", "still"];
-            const detected = calmKeywords.some(keyword => response.toLowerCase().includes(keyword));
-            logMessage(`Calm response check result: ${detected}`);
-            return detected;
         }
     </script>
 </body>
