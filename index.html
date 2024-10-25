@@ -56,8 +56,8 @@
             }
         }
 
-        // Play an audio buffer with optional delay
-        async function playAudioBuffer(bufferName) {
+        // Play an audio buffer and add an explicit delay after it completes
+        async function playAudioBuffer(bufferName, delayAfter = 0) {
             try {
                 const source = audioContext.createBufferSource();
                 source.buffer = audioBuffers[bufferName];
@@ -66,10 +66,10 @@
 
                 logMessage(`${bufferName} started playing.`);
 
-                // Wait for the buffer's duration before returning
+                // Wait for the buffer's duration + delayAfter before returning
                 const bufferDuration = source.buffer.duration;
-                await new Promise(resolve => setTimeout(resolve, bufferDuration * 1000));
-                logMessage(`${bufferName} finished playing.`);
+                await new Promise(resolve => setTimeout(resolve, (bufferDuration + delayAfter) * 1000));
+                logMessage(`${bufferName} finished playing. Waiting for ${delayAfter} seconds.`);
             } catch (error) {
                 logMessage(`Error playing ${bufferName}: ${error}`);
             }
@@ -96,8 +96,10 @@
             // Initialize audio buffers and start session flow
             await initAudio();
 
-            // Play Intro, wait for it to complete, then play Prompt1
+            // Play Intro, then wait 3 seconds before playing Prompt1
             await playAudioBuffer('Intro');
+            await new Promise(resolve => setTimeout(resolve, 3000)); // Explicit 3-second delay
+            logMessage("3-second delay completed after Intro.");
             await playAudioBuffer('Prompt1');
 
             // After Prompt1, immediately start capturing user input
@@ -108,10 +110,10 @@
             // Check for a calm response and play the appropriate audio buffer
             if (checkForCalmResponse(userResponse)) {
                 logMessage("Calm response detected; playing CalmResponse segment...");
-                playAudioBuffer('CalmResponse');
+                await playAudioBuffer('CalmResponse');
             } else {
                 logMessage("No calm response; playing SupportiveResponse segment...");
-                playAudioBuffer('SupportiveResponse');
+                await playAudioBuffer('SupportiveResponse');
             }
         });
 
@@ -197,7 +199,7 @@
         function checkForCalmResponse(response) {
             const calmKeywords = ["calm", "peaceful", "relaxed", "quiet", "still"];
             const detected = calmKeywords.some(keyword => response.toLowerCase().includes(keyword));
-            logMessage("Calm response check: " + detected);
+            logMessage(`Calm response check result: ${detected}`);
             return detected;
         }
     </script>
