@@ -16,7 +16,7 @@
         document.getElementById('startButton').addEventListener('click', async () => {
             console.log("Session starting...");
 
-            // Play the first message only to confirm functionality
+            // First instruction: Take a deep breath in and out
             await playText("Take a deep breath in and out.");
             console.log("First message played");
 
@@ -24,29 +24,60 @@
             await new Promise(resolve => setTimeout(resolve, 5000));
             console.log("Pause complete");
 
-            // Second message to confirm the sequence
-            await playText("What are you noticing?");
+            // Second instruction and prompt for user input
+            await playText("What are you noticing? Is the mind quieting down or are other things happening?");
             console.log("Second message played");
+
+            // Placeholder for capturing user input
+            const userResponse = await captureUserInput();
+            console.log(`User response: ${userResponse}`);
+
+            // Get GPT's response and play it
+            const gptResponse = await getGptResponse(userResponse);
+            await playText(gptResponse);
+            console.log("GPT response played");
         });
 
         async function playText(text) {
-            const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    input: { text: text },
-                    voice: { languageCode: "en-US", name: "en-US-Wavenet-D" },
-                    audioConfig: { audioEncoding: "MP3" }
-                })
-            });
-            const data = await response.json();
-            const audioContent = data.audioContent;
-            audio.src = `data:audio/mp3;base64,${audioContent}`;
-            audio.load();
-            audio.play();
+            try {
+                const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=YOUR_GOOGLE_API_KEY`;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: { text: text },
+                        voice: { languageCode: "en-US", name: "en-US-Wavenet-D" },
+                        audioConfig: { audioEncoding: "MP3" }
+                    })
+                });
+
+                const data = await response.json();
+                const audioContent = data.audioContent;
+
+                audio.src = `data:audio/mp3;base64,${audioContent}`;
+                audio.load();
+                audio.play();
+
+                return new Promise(resolve => {
+                    audio.onended = resolve;
+                });
+            } catch (error) {
+                console.error("Error in playText function:", error);
+            }
+        }
+
+        async function captureUserInput() {
+            // Simulated user input (replace with actual Speech-to-Text call)
             return new Promise(resolve => {
-                audio.onended = resolve;
+                setTimeout(() => resolve("I'm feeling more relaxed now"), 2000);
+            });
+        }
+
+        async function getGptResponse(userText) {
+            // Simulated GPT response (replace with actual GPT API call)
+            return new Promise(resolve => {
+                setTimeout(() => resolve("Great, we are complete"), 2000);
             });
         }
     </script>
