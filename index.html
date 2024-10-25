@@ -130,6 +130,16 @@
                 source.connect(analyser);
 
                 logMessage("Starting real-time silence detection.");
+
+                // Set a maximum recording time of 10 seconds
+                const recordingTimeout = setTimeout(() => {
+                    if (recorder.state === "recording") {
+                        recorder.stop();
+                        logMessage("Recording stopped due to timeout.");
+                    }
+                }, 10000);
+
+                // Detect speaking and silence to start/stop recording
                 const silenceDetectionPromise = new Promise(resolve => {
                     function detectSilence() {
                         const data = new Uint8Array(analyser.frequencyBinCount);
@@ -149,6 +159,7 @@
                                 if (recorder.state === "recording") {
                                     recorder.stop();
                                     logMessage("Recording stopped after sustained silence.");
+                                    clearTimeout(recordingTimeout); // Clear the max recording timeout
                                     resolve();
                                 }
                             }, 3000); // Stop recording after 3 seconds of silence
