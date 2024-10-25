@@ -48,7 +48,7 @@
         // Load an audio file as a buffer
         async function loadAudioBuffer(fileName) {
             try {
-                const response = await fetch(`https://raw.githubusercontent.com/Jsskieracer/Shifting-mvp/main/audio/${fileName}.m4a`);
+                const response = await fetch(`https://raw.githubusercontent.com/Jsskieracer/Shifting-mvp/main/audio/${fileName}.mp3`);
                 const arrayBuffer = await response.arrayBuffer();
                 return await audioContext.decodeAudioData(arrayBuffer);
             } catch (error) {
@@ -56,17 +56,19 @@
             }
         }
 
-        // Play an audio buffer with optional delay
+        // Play an audio buffer with enforced delay
         function playAudioBuffer(bufferName, delay = 0) {
-            try {
-                const source = audioContext.createBufferSource();
-                source.buffer = audioBuffers[bufferName];
-                source.connect(audioContext.destination);
-                source.start(audioContext.currentTime + delay);
-                logMessage(`${bufferName} played successfully after ${delay} seconds.`);
-            } catch (error) {
-                logMessage(`Error playing ${bufferName}: ${error}`);
-            }
+            setTimeout(() => {
+                try {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffers[bufferName];
+                    source.connect(audioContext.destination);
+                    source.start();
+                    logMessage(`${bufferName} played successfully after ${delay} seconds.`);
+                } catch (error) {
+                    logMessage(`Error playing ${bufferName}: ${error}`);
+                }
+            }, delay * 1000);
         }
 
         document.getElementById('startButton').addEventListener('click', async () => {
@@ -90,9 +92,9 @@
             // Initialize audio buffers and start session flow
             await initAudio();
 
-            // Play Intro and Prompt1 with 5-second delay between
+            // Play Intro and Prompt1 with enforced 5-second delay between
             playAudioBuffer('Intro');
-            playAudioBuffer('Prompt1', 5); // Delay of 5 seconds after Intro
+            playAudioBuffer('Prompt1', 5); // Enforced delay of 5 seconds after Intro
 
             // After Prompt1, capture user response
             logMessage("Prompt 1 segment should have played; moving to user input capture...");
