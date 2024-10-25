@@ -31,6 +31,7 @@
 
         let mediaStream;
         let audio = new Audio();
+        let silenceTimeout; // Track the silence timeout for clearing when needed
 
         document.getElementById('startButton').addEventListener('click', async () => {
             logMessage("Session starting...");
@@ -117,19 +118,19 @@
                                 logMessage("Speech detected, recording started.");
                                 speakingDetected = true;
                             }
-                            clearTimeout(silenceTimeout);
+                            clearTimeout(silenceTimeout); // Reset silence detection
                         } else if (speakingDetected) {
+                            logMessage("Silence detected, setting timeout to stop recording...");
                             silenceTimeout = setTimeout(() => {
                                 if (recorder.state === "recording") {
                                     recorder.stop();
-                                    logMessage("Silence detected, recording stopped.");
+                                    logMessage("Recording stopped after sustained silence.");
                                     resolve();
                                 }
-                            }, 3000);
+                            }, 3000); // Stop recording after 3 seconds of silence
                         }
-                        if (!speakingDetected || recorder.state === "recording") {
-                            requestAnimationFrame(detectSilence);
-                        }
+
+                        requestAnimationFrame(detectSilence);
                     }
                     detectSilence();
                 });
