@@ -211,7 +211,7 @@
                     },
                     body: JSON.stringify({
                         model: "text-davinci-003",
-                        prompt: `Based on the following user response, determine if the user feels calm and ready to proceed:\n\n"${transcription}"\n\nPlease respond with "calm" if the user feels calm, and "not calm" if the user does not feel calm.`,
+                        prompt: `Based on the following user response, determine if the user feels calm, has fewer thoughts, or is experiencing stillness or peace and is ready to proceed:\n\n"${transcription}"\n\nPlease respond with "calm" if the user feels calm, and "not calm" if the user does not feel calm.`,
                         max_tokens: 10,
                         temperature: 0
                     })
