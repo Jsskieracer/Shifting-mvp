@@ -41,6 +41,10 @@
             }
         }
 
+        async function pause(duration) {
+            return new Promise(resolve => setTimeout(resolve, duration));
+        }
+
         document.getElementById('startButton').addEventListener('click', async () => {
             logMessage("Session starting...");
 
@@ -52,13 +56,15 @@
                 return;
             }
 
-            // Start session flow with pre-recorded audio segments
+            // Start session flow with pre-recorded audio segments and 5-second pauses between them
             logMessage("Attempting to play Intro segment...");
             await playAudioSegment('Intro');
+            await pause(5000); // 5-second pause after Intro
 
             logMessage("Attempting to play Prompt1 segment...");
             await playAudioSegment('Prompt1');
-            
+            await pause(5000); // 5-second pause after Prompt1
+
             logMessage("Prompt 1 segment should have played; moving to user input capture...");
 
             const userResponse = await captureUserInputDynamic();
