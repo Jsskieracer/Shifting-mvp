@@ -79,17 +79,43 @@
                 if (!mediaStream) {
                     throw new Error("Microphone access not available");
                 }
+
                 const recorder = new MediaRecorder(mediaStream);
                 const chunks = [];
+                let silenceTimeout;
+
+                recorder.ondataavailable = event => chunks.push(event.data);
 
                 // Start recording
-                recorder.ondataavailable = event => chunks.push(event.data);
                 recorder.start();
                 console.log("Recording audio...");
 
-                // Stop recording after 5 seconds
-                await new Promise(resolve => setTimeout(resolve, 5000));
-                recorder.stop();
+                // Stop recording when silence is detected for 2 seconds
+                const silenceDetectionPromise = new Promise(resolve => {
+                    const audioContext = new AudioContext();
+                    const source = audioContext.createMediaStreamSource(mediaStream);
+                    const analyser = audioContext.createAnalyser();
+                    source.connect(analyser);
+
+                    const detectSilence = () => {
+                        const data = new Uint8Array(analyser.frequencyBinCount);
+                        analyser.getByteFrequencyData(data);
+                        const avgVolume = data.reduce((sum, value) => sum + value) / data.length;
+
+                        if (avgVolume < 10) { // Adjust the threshold for detecting silence
+                            silenceTimeout = setTimeout(() => {
+                                recorder.stop();
+                                resolve();
+                            }, 2000); // 2 seconds of silence
+                        } else {
+                            clearTimeout(silenceTimeout);
+                        }
+                        requestAnimationFrame(detectSilence);
+                    };
+                    detectSilence();
+                });
+
+                await silenceDetectionPromise;
 
                 const audioBlob = await new Promise(resolve => {
                     recorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
