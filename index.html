@@ -12,9 +12,19 @@
 
     <script>
         const audio = new Audio();
+        let mediaStream; // Global variable to maintain microphone access
 
         document.getElementById('startButton').addEventListener('click', async () => {
             console.log("Session starting...");
+
+            // Request microphone access at the start
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log("Microphone access granted");
+            } catch (error) {
+                console.error("Microphone access denied", error);
+                return;
+            }
 
             // First instruction: Take a deep breath in and out
             await playText("Take a deep breath in and out.");
@@ -28,7 +38,7 @@
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
             console.log("Second message played");
 
-            // Capture user input with real audio recording and transcription
+            // Capture user input
             const userResponse = await captureUserInput();
             console.log(`User response: ${userResponse}`);
 
@@ -55,13 +65,11 @@
                 const data = await response.json();
                 const audioContent = data.audioContent;
 
+                // Set and play audio, forcing playback through AirPods if connected
                 audio.src = `data:audio/mp3;base64,${audioContent}`;
                 audio.load();
-                audio.play();
-
-                return new Promise(resolve => {
-                    audio.onended = resolve;
-                });
+                await audio.play();
+                console.log("Audio is playing...");
             } catch (error) {
                 console.error("Error in playText function:", error);
             }
@@ -69,9 +77,10 @@
 
         async function captureUserInput() {
             try {
-                // Request microphone access
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const recorder = new MediaRecorder(stream);
+                if (!mediaStream) {
+                    throw new Error("Microphone access not available");
+                }
+                const recorder = new MediaRecorder(mediaStream);
                 const chunks = [];
 
                 // Start recording
@@ -79,16 +88,12 @@
                 recorder.start();
                 console.log("Recording audio...");
 
-                // Stop recording after 5 seconds (or adjust as needed)
+                // Stop recording after 5 seconds
                 await new Promise(resolve => setTimeout(resolve, 5000));
                 recorder.stop();
 
-                // Wait for recording to complete
                 const audioBlob = await new Promise(resolve => {
-                    recorder.onstop = () => {
-                        const blob = new Blob(chunks, { type: 'audio/webm' });
-                        resolve(blob);
-                    };
+                    recorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
                 });
 
                 // Convert the audio to base64 for Google Speech-to-Text API
