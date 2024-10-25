@@ -12,14 +12,19 @@
 
     <script>
         document.getElementById('startButton').addEventListener('click', async () => {
+            console.log("Session starting...");
+
             // First instruction: Take a deep breath in and out
             await playText("Take a deep breath in and out.");
+            console.log("First message played");
 
-            // Pause for 20 seconds
-            await new Promise(resolve => setTimeout(resolve, 20000));
+            // Shorter pause for troubleshooting (5 seconds instead of 20)
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            console.log("Pause complete");
 
             // Second instruction: Ask what the user is noticing
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
+            console.log("Second message played");
         });
 
         async function playText(text) {
