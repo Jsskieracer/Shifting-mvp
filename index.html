@@ -56,17 +56,19 @@
             }
         }
 
-        // Play an audio buffer and add a delay based on buffer duration
-        function playAudioBuffer(bufferName, delayAfter = 0) {
+        // Play an audio buffer and apply delay only after the buffer completes
+        async function playAudioBuffer(bufferName, delayAfter = 0) {
             try {
                 const source = audioContext.createBufferSource();
                 source.buffer = audioBuffers[bufferName];
                 source.connect(audioContext.destination);
                 source.start();
-
-                const bufferDuration = source.buffer.duration;
+                
                 logMessage(`${bufferName} played successfully.`);
-                return new Promise(resolve => setTimeout(resolve, (bufferDuration + delayAfter) * 1000));
+
+                // Wait for the buffer's duration + delayAfter before resolving
+                const bufferDuration = source.buffer.duration;
+                await new Promise(resolve => setTimeout(resolve, (bufferDuration + delayAfter) * 1000));
             } catch (error) {
                 logMessage(`Error playing ${bufferName}: ${error}`);
             }
@@ -93,7 +95,7 @@
             // Initialize audio buffers and start session flow
             await initAudio();
 
-            // Play Intro, wait for it to finish, then play Prompt1 with 5-second enforced delay after Intro
+            // Play Intro, wait for it to complete, then play Prompt1 with enforced 5-second delay after Intro
             await playAudioBuffer('Intro');
             await playAudioBuffer('Prompt1', 5); // Enforced 5-second delay after Intro completes
 
