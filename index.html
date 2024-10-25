@@ -38,7 +38,8 @@
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
             console.log("Second message played");
 
-            // Capture user input after the entire prompt has been played
+            // Wait a moment, then capture user input
+            await new Promise(resolve => setTimeout(resolve, 1000));  // 1-second delay before recording
             const userResponse = await captureUserInput();
             console.log(`User response: ${userResponse}`);
 
@@ -86,7 +87,7 @@
 
                 recorder.ondataavailable = event => chunks.push(event.data);
 
-                // Start recording
+                // Start recording after the delay
                 recorder.start();
                 console.log("Recording audio...");
 
