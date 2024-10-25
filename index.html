@@ -9,7 +9,7 @@
             background-color: #f0f0f0; 
             padding: 10px; 
             border-radius: 5px; 
-            max-height: 200px; 
+            max-height: 400px; /* Increased height for easier copying */
             overflow-y: auto; 
             margin-top: 20px; 
         }
@@ -56,8 +56,8 @@
             }
         }
 
-        // Play an audio buffer and add a delay only after the buffer completes
-        async function playAudioBuffer(bufferName, delayAfter = 0) {
+        // Play an audio buffer with optional delay
+        async function playAudioBuffer(bufferName) {
             try {
                 const source = audioContext.createBufferSource();
                 source.buffer = audioBuffers[bufferName];
@@ -66,10 +66,10 @@
 
                 logMessage(`${bufferName} started playing.`);
 
-                // Wait for the buffer's duration + delayAfter before resolving
+                // Wait for the buffer's duration before returning
                 const bufferDuration = source.buffer.duration;
-                await new Promise(resolve => setTimeout(resolve, (bufferDuration + delayAfter) * 1000));
-                logMessage(`${bufferName} finished playing, waiting ${delayAfter} seconds.`);
+                await new Promise(resolve => setTimeout(resolve, bufferDuration * 1000));
+                logMessage(`${bufferName} finished playing.`);
             } catch (error) {
                 logMessage(`Error playing ${bufferName}: ${error}`);
             }
@@ -96,12 +96,12 @@
             // Initialize audio buffers and start session flow
             await initAudio();
 
-            // Play Intro, wait for it to complete, then play Prompt1 with enforced 5-second delay after Intro
+            // Play Intro, wait for it to complete, then play Prompt1
             await playAudioBuffer('Intro');
-            await playAudioBuffer('Prompt1', 5); // Enforced 5-second delay after Intro completes
+            await playAudioBuffer('Prompt1');
 
-            // After Prompt1, capture user response
-            logMessage("Prompt 1 segment should have played; moving to user input capture...");
+            // After Prompt1, immediately start capturing user input
+            logMessage("Prompt 1 segment finished; moving to user input capture...");
             const userResponse = await captureUserInputDynamic();
             logMessage("User response captured: " + userResponse);
 
