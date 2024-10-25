@@ -29,10 +29,10 @@
             logElement.scrollTop = logElement.scrollHeight;
         }
 
-        // Function to play audio from GitHub repository with added error handling
         async function playAudioSegment(segmentName) {
             try {
                 const audio = new Audio(`https://raw.githubusercontent.com/Jsskieracer/Shifting-mvp/main/audio/${segmentName}.m4a`);
+                await audio.load();  // Ensure audio is loaded
                 await audio.play().then(() => logMessage(`${segmentName} played.`)).catch(err => logMessage(`Error playing ${segmentName}: ${err}`));
             } catch (error) {
                 logMessage(`Error in playAudioSegment for ${segmentName}: ${error}`);
@@ -40,37 +40,41 @@
         }
 
         let mediaStream;
+        let currentStep = 0;
 
         document.getElementById('startButton').addEventListener('click', async () => {
-            logMessage("Session starting...");
+            if (currentStep === 0) {
+                logMessage("Session starting...");
 
-            try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                logMessage("Microphone access granted");
-            } catch (error) {
-                logMessage("Microphone access denied: " + error);
-                return;
-            }
+                try {
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    logMessage("Microphone access granted");
+                } catch (error) {
+                    logMessage("Microphone access denied: " + error);
+                    return;
+                }
 
-            // Start session flow with pre-recorded audio segments
-            await playAudioSegment('Intro');
-            logMessage("Intro segment attempted.");
+                // Start session flow with pre-recorded audio segments
+                await playAudioSegment('Intro');
+                logMessage("Intro segment attempted.");
+                currentStep = 1;
 
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            } else if (currentStep === 1) {
+                await playAudioSegment('Prompt1');
+                logMessage("Prompt 1 segment attempted.");
 
-            await playAudioSegment('Prompt1');
-            logMessage("Prompt 1 segment attempted.");
+                const userResponse = await captureUserInputDynamic();
+                logMessage("User response captured: " + userResponse);
 
-            const userResponse = await captureUserInputDynamic();
-            logMessage("User response captured: " + userResponse);
-
-            // Check for a calm response and play the appropriate audio segment
-            if (checkForCalmResponse(userResponse)) {
-                await playAudioSegment('CalmResponse');
-                logMessage("Calm response detected, playing calm response segment.");
-            } else {
-                await playAudioSegment('SupportiveResponse');
-                logMessage("Playing supportive response segment.");
+                // Check for a calm response and play the appropriate audio segment
+                if (checkForCalmResponse(userResponse)) {
+                    await playAudioSegment('CalmResponse');
+                    logMessage("Calm response detected, playing calm response segment.");
+                } else {
+                    await playAudioSegment('SupportiveResponse');
+                    logMessage("Playing supportive response segment.");
+                }
+                currentStep = 2;
             }
         });
 
@@ -125,7 +129,7 @@
 
                 const audioBase64 = await blobToBase64(audioBlob);
 
-                const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=YOUR_GOOGLE_API_KEY`, {
+                const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
