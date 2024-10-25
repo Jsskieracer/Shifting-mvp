@@ -11,79 +11,42 @@
     <button id="startButton">Start Session</button>
 
     <script>
-        function logMessage(message) {
-            console.log(message);
-        }
-
         const audio = new Audio();
 
         document.getElementById('startButton').addEventListener('click', async () => {
-            logMessage("Session starting...");
+            console.log("Session starting...");
 
-            // First instruction: Take a deep breath in and out
+            // Play the first message only to confirm functionality
             await playText("Take a deep breath in and out.");
-            logMessage("First message played");
+            console.log("First message played");
 
-            // Shorter pause for easy testing (5 seconds)
+            // Short pause (5 seconds)
             await new Promise(resolve => setTimeout(resolve, 5000));
-            logMessage("Pause complete");
+            console.log("Pause complete");
 
-            // Second instruction with user input prompt
-            await playText("What are you noticing? Is the mind quieting down or are other things happening?");
-            logMessage("Second message played");
-
-            // Placeholder for capturing user response
-            const userResponse = await captureUserInput();
-            logMessage(`User response: ${userResponse}`);
-
-            // Send user response to GPT and play the response
-            const gptResponse = await getGptResponse(userResponse);
-            await playText(gptResponse);
-            logMessage("GPT response played");
+            // Second message to confirm the sequence
+            await playText("What are you noticing?");
+            console.log("Second message played");
         });
 
         async function playText(text) {
-            try {
-                const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=YOUR_GOOGLE_API_KEY`;
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        input: { text: text },
-                        voice: { languageCode: "en-US", name: "en-US-Wavenet-D" },
-                        audioConfig: { audioEncoding: "MP3" }
-                    })
-                });
-
-                const data = await response.json();
-                const audioContent = data.audioContent;
-
-                audio.src = `data:audio/mp3;base64,${audioContent}`;
-                audio.load();
-                audio.play();
-
-                return new Promise(resolve => {
-                    audio.onended = resolve;
-                });
-            } catch (error) {
-                logMessage(`Error: ${error.message}`);
-            }
-        }
-
-        async function captureUserInput() {
-            // Placeholder for Google Speech-to-Text implementation
-            // Simulate user input with a dummy response for testing
-            return new Promise(resolve => {
-                setTimeout(() => resolve("I'm feeling more relaxed now"), 2000);
+            const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=YOUR_GOOGLE_API_KEY`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    input: { text: text },
+                    voice: { languageCode: "en-US", name: "en-US-Wavenet-D" },
+                    audioConfig: { audioEncoding: "MP3" }
+                })
             });
-        }
-
-        async function getGptResponse(userText) {
-            // Placeholder function to simulate GPT response
-            // In a real implementation, this would call the GPT API with the userText input
+            const data = await response.json();
+            const audioContent = data.audioContent;
+            audio.src = `data:audio/mp3;base64,${audioContent}`;
+            audio.load();
+            audio.play();
             return new Promise(resolve => {
-                setTimeout(() => resolve("Great, we are complete"), 2000);
+                audio.onended = resolve;
             });
         }
     </script>
