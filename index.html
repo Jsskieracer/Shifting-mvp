@@ -30,8 +30,8 @@
             await new Promise(resolve => setTimeout(resolve, 5000));
             logMessage("Pause complete");
 
-            // Second instruction: Ask what the user is noticing
-            await playText("What are you noticing? Is the mind quieting down or are other things happening?");
+            // Play the same instruction again to test the second playText call
+            await playText("Take a deep breath in and out.");
             logMessage("Second message played");
         });
 
