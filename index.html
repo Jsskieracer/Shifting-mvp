@@ -29,52 +29,47 @@
             logElement.scrollTop = logElement.scrollHeight;
         }
 
+        let audio, mediaStream;
+
         async function playAudioSegment(segmentName) {
             try {
-                const audio = new Audio(`https://raw.githubusercontent.com/Jsskieracer/Shifting-mvp/main/audio/${segmentName}.m4a`);
-                await audio.load();  // Ensure audio is loaded
-                await audio.play().then(() => logMessage(`${segmentName} played.`)).catch(err => logMessage(`Error playing ${segmentName}: ${err}`));
+                audio = new Audio(`https://raw.githubusercontent.com/Jsskieracer/Shifting-mvp/main/audio/${segmentName}.m4a`);
+                await audio.play();
+                logMessage(`${segmentName} played successfully.`);
             } catch (error) {
-                logMessage(`Error in playAudioSegment for ${segmentName}: ${error}`);
+                logMessage(`Error playing ${segmentName}: ${error}`);
             }
         }
 
-        let mediaStream;
-        let currentStep = 0;
-
         document.getElementById('startButton').addEventListener('click', async () => {
-            if (currentStep === 0) {
-                logMessage("Session starting...");
+            logMessage("Session starting...");
 
-                try {
-                    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    logMessage("Microphone access granted");
-                } catch (error) {
-                    logMessage("Microphone access denied: " + error);
-                    return;
-                }
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                logMessage("Microphone access granted");
+            } catch (error) {
+                logMessage("Microphone access denied: " + error);
+                return;
+            }
 
-                // Start session flow with pre-recorded audio segments
-                await playAudioSegment('Intro');
-                logMessage("Intro segment attempted.");
-                currentStep = 1;
+            // Start session flow with pre-recorded audio segments
+            logMessage("Attempting to play Intro segment...");
+            await playAudioSegment('Intro');
 
-            } else if (currentStep === 1) {
-                await playAudioSegment('Prompt1');
-                logMessage("Prompt 1 segment attempted.");
+            logMessage("Attempting to play Prompt1 segment...");
+            await playAudioSegment('Prompt1');
+            
+            logMessage("Prompt 1 segment should have played; moving to user input capture...");
 
-                const userResponse = await captureUserInputDynamic();
-                logMessage("User response captured: " + userResponse);
+            const userResponse = await captureUserInputDynamic();
+            logMessage("User response captured: " + userResponse);
 
-                // Check for a calm response and play the appropriate audio segment
-                if (checkForCalmResponse(userResponse)) {
-                    await playAudioSegment('CalmResponse');
-                    logMessage("Calm response detected, playing calm response segment.");
-                } else {
-                    await playAudioSegment('SupportiveResponse');
-                    logMessage("Playing supportive response segment.");
-                }
-                currentStep = 2;
+            if (checkForCalmResponse(userResponse)) {
+                logMessage("Calm response detected; playing CalmResponse segment...");
+                await playAudioSegment('CalmResponse');
+            } else {
+                logMessage("No calm response; playing SupportiveResponse segment...");
+                await playAudioSegment('SupportiveResponse');
             }
         });
 
