@@ -19,6 +19,9 @@
             document.getElementById('log').innerText += message + "\n";
         }
 
+        // Create a single audio element for playback
+        const audio = new Audio();
+
         document.getElementById('startButton').addEventListener('click', async () => {
             logMessage("Session starting...");
 
@@ -60,16 +63,16 @@
 
                 // Parse the response JSON and extract the audio content
                 const data = await response.json();
-                logMessage("Response received and parsed.");
-
                 const audioContent = data.audioContent;
+
                 if (!audioContent) {
                     throw new Error("No audio content received from API");
                 }
                 logMessage("Audio content received.");
 
-                // Create an audio element to play the audio
-                const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
+                // Set the audio source and load it explicitly
+                audio.src = `data:audio/mp3;base64,${audioContent}`;
+                audio.load();
                 audio.play();
                 logMessage("Audio playback started.");
 
