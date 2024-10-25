@@ -35,7 +35,7 @@
         async function initAudio() {
             try {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const audioFiles = ['Intro', 'Prompt1', 'CalmResponse', 'SupportiveResponse'];
+                const audioFiles = ['Intro', 'Prompt1', 'Calm_response', 'Supportive_response'];
                 for (const file of audioFiles) {
                     audioBuffers[file] = await loadAudioBuffer(file);
                 }
@@ -110,10 +110,10 @@
             // Check for a calm response and play the appropriate audio buffer
             if (checkForCalmResponse(userResponse)) {
                 logMessage("Calm response detected; playing CalmResponse segment...");
-                await playAudioBuffer('CalmResponse');
+                await playAudioBuffer('Calm_response');
             } else {
                 logMessage("No calm response; playing SupportiveResponse segment...");
-                await playAudioBuffer('SupportiveResponse');
+                await playAudioBuffer('Supportive_response');
             }
         });
 
