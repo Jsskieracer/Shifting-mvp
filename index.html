@@ -30,7 +30,7 @@
             await new Promise(resolve => setTimeout(resolve, 5000));
             logMessage("Pause complete");
 
-            // Attempt to play the second message and retry if necessary
+            // Attempt to play the second message
             await playTextWithRetry("Take a deep breath in and out.", 3);
             logMessage("Second message played (or retries exhausted)");
         });
@@ -52,6 +52,7 @@
                         audioConfig: { audioEncoding: "MP3" }
                     })
                 });
+                logMessage("API request sent.");
 
                 if (!response.ok) {
                     throw new Error(`API error: ${response.statusText}`);
@@ -59,15 +60,18 @@
 
                 // Parse the response JSON and extract the audio content
                 const data = await response.json();
-                const audioContent = data.audioContent;
+                logMessage("Response received and parsed.");
 
+                const audioContent = data.audioContent;
                 if (!audioContent) {
                     throw new Error("No audio content received from API");
                 }
+                logMessage("Audio content received.");
 
                 // Create an audio element to play the audio
                 const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
                 audio.play();
+                logMessage("Audio playback started.");
 
                 // Wait for the audio to finish before moving to the next instruction
                 return new Promise(resolve => {
