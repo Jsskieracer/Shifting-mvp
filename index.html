@@ -38,7 +38,7 @@
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
             console.log("Second message played");
 
-            // Capture user input
+            // Capture user input after the entire prompt has been played
             const userResponse = await captureUserInput();
             console.log(`User response: ${userResponse}`);
 
@@ -90,7 +90,7 @@
                 recorder.start();
                 console.log("Recording audio...");
 
-                // Stop recording when silence is detected for 2 seconds
+                // Stop recording when silence is detected for 3 seconds
                 const silenceDetectionPromise = new Promise(resolve => {
                     const audioContext = new AudioContext();
                     const source = audioContext.createMediaStreamSource(mediaStream);
@@ -106,7 +106,7 @@
                             silenceTimeout = setTimeout(() => {
                                 recorder.stop();
                                 resolve();
-                            }, 2000); // 2 seconds of silence
+                            }, 3000); // 3 seconds of silence
                         } else {
                             clearTimeout(silenceTimeout);
                         }
