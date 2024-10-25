@@ -102,9 +102,9 @@
             logMessage("3-second delay completed after Intro.");
             await playAudioBuffer('Prompt1');
 
-            // After Prompt1, capture and process user input
-            logMessage("Prompt 1 segment finished; moving to user input capture...");
-            const userResponse = await captureUserInputDynamic();
+            // After Prompt1, record for a fixed duration and then transcribe
+            logMessage("Prompt 1 segment finished; starting fixed-duration recording...");
+            const userResponse = await captureFixedDurationInput();
             logMessage("User response captured: " + userResponse);
 
             // Process response and play the appropriate audio
@@ -117,63 +117,25 @@
             }
         });
 
-        async function captureUserInputDynamic() {
+        async function captureFixedDurationInput() {
             try {
                 const recorder = new MediaRecorder(mediaStream);
                 const chunks = [];
-                let speakingDetected = false;
 
                 recorder.ondataavailable = event => chunks.push(event.data);
 
-                const analyser = audioContext.createAnalyser();
-                const source = audioContext.createMediaStreamSource(mediaStream);
-                source.connect(analyser);
+                recorder.start();
+                logMessage("Fixed-duration recording started.");
 
-                logMessage("Starting real-time silence detection.");
-
-                // Set a maximum recording time of 10 seconds
-                const recordingTimeout = setTimeout(() => {
-                    if (recorder.state === "recording") {
-                        recorder.stop();
-                        logMessage("Recording stopped due to timeout.");
-                    }
-                }, 10000);
-
-                // Detect speaking and silence to start/stop recording
-                const silenceDetectionPromise = new Promise(resolve => {
-                    function detectSilence() {
-                        const data = new Uint8Array(analyser.frequencyBinCount);
-                        analyser.getByteFrequencyData(data);
-                        const avgVolume = data.reduce((sum, value) => sum + value) / data.length;
-
-                        if (avgVolume > 10) {
-                            if (!speakingDetected) {
-                                recorder.start();
-                                logMessage("Speech detected, recording started.");
-                                speakingDetected = true;
-                            }
-                            clearTimeout(silenceTimeout);
-                        } else if (speakingDetected) {
-                            logMessage("Silence detected, setting timeout to stop recording...");
-                            silenceTimeout = setTimeout(() => {
-                                if (recorder.state === "recording") {
-                                    recorder.stop();
-                                    logMessage("Recording stopped after sustained silence.");
-                                    clearTimeout(recordingTimeout); // Clear the max recording timeout
-                                    resolve();
-                                }
-                            }, 3000); // Stop recording after 3 seconds of silence
-                        }
-
-                        requestAnimationFrame(detectSilence);
-                    }
-                    detectSilence();
-                });
-
-                await silenceDetectionPromise;
+                // Stop recording after 5 seconds
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                recorder.stop();
 
                 const audioBlob = await new Promise(resolve => {
-                    recorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
+                    recorder.onstop = () => {
+                        logMessage("Recording stopped after fixed duration.");
+                        resolve(new Blob(chunks, { type: 'audio/webm' }));
+                    };
                 });
 
                 const audioBase64 = await blobToBase64(audioBlob);
