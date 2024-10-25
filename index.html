@@ -39,7 +39,7 @@
             console.log("Second message played");
 
             // Wait a moment, then capture user input
-            await new Promise(resolve => setTimeout(resolve, 1000));  // 1-second delay before recording
+            await new Promise(resolve => setTimeout(resolve, 1500));  // 1.5-second delay before recording
             const userResponse = await captureUserInput();
             console.log(`User response: ${userResponse}`);
 
@@ -87,11 +87,11 @@
 
                 recorder.ondataavailable = event => chunks.push(event.data);
 
-                // Start recording after the delay
+                // Start recording and set a max recording time of 10 seconds
                 recorder.start();
                 console.log("Recording audio...");
 
-                // Stop recording when silence is detected for 3 seconds
+                // Stop recording if silence is detected for 3 seconds, or after 10 seconds max
                 const silenceDetectionPromise = new Promise(resolve => {
                     const audioContext = new AudioContext();
                     const source = audioContext.createMediaStreamSource(mediaStream);
@@ -114,6 +114,14 @@
                         requestAnimationFrame(detectSilence);
                     };
                     detectSilence();
+
+                    // Set a max recording time of 10 seconds
+                    setTimeout(() => {
+                        if (recorder.state === "recording") {
+                            recorder.stop();
+                            resolve();
+                        }
+                    }, 10000); // 10 seconds max recording time
                 });
 
                 await silenceDetectionPromise;
