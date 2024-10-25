@@ -9,7 +9,7 @@
             background-color: #f0f0f0; 
             padding: 10px; 
             border-radius: 5px; 
-            max-height: 400px; /* Increased height for easier copying */
+            max-height: 400px; 
             overflow-y: auto; 
             margin-top: 20px; 
         }
@@ -122,6 +122,8 @@
                 const recorder = new MediaRecorder(mediaStream);
                 const chunks = [];
                 let speakingDetected = false;
+                const VOLUME_THRESHOLD = 15;  // Adjust threshold for sensitivity
+                const SILENCE_THRESHOLD = 5;  // Threshold for silence to stop recording
 
                 recorder.ondataavailable = event => chunks.push(event.data);
 
@@ -132,12 +134,14 @@
                 logMessage("Starting real-time silence detection.");
 
                 const silenceDetectionPromise = new Promise(resolve => {
+                    let silenceTimeout;
+
                     function detectSilence() {
                         const data = new Uint8Array(analyser.frequencyBinCount);
                         analyser.getByteFrequencyData(data);
                         const avgVolume = data.reduce((sum, value) => sum + value) / data.length;
 
-                        if (avgVolume > 10) {
+                        if (avgVolume > VOLUME_THRESHOLD) {
                             if (!speakingDetected) {
                                 recorder.start();
                                 logMessage("Speech detected, recording started.");
@@ -145,14 +149,14 @@
                             }
                             clearTimeout(silenceTimeout);
                         } else if (speakingDetected) {
-                            logMessage("Silence detected, setting timeout to stop recording...");
+                            logMessage("Potential silence detected. Waiting for sustained silence...");
                             silenceTimeout = setTimeout(() => {
                                 if (recorder.state === "recording") {
                                     recorder.stop();
                                     logMessage("Recording stopped after sustained silence.");
                                     resolve();
                                 }
-                            }, 3000); // Stop recording after 3 seconds of sustained silence
+                            }, 3000);  // Stop recording after 3 seconds of sustained silence
                         }
 
                         requestAnimationFrame(detectSilence);
