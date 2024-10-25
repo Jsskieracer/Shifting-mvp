@@ -56,19 +56,20 @@
             }
         }
 
-        // Play an audio buffer with enforced delay
-        function playAudioBuffer(bufferName, delay = 0) {
-            setTimeout(() => {
-                try {
-                    const source = audioContext.createBufferSource();
-                    source.buffer = audioBuffers[bufferName];
-                    source.connect(audioContext.destination);
-                    source.start();
-                    logMessage(`${bufferName} played successfully after ${delay} seconds.`);
-                } catch (error) {
-                    logMessage(`Error playing ${bufferName}: ${error}`);
-                }
-            }, delay * 1000);
+        // Play an audio buffer and add a delay based on buffer duration
+        function playAudioBuffer(bufferName, delayAfter = 0) {
+            try {
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffers[bufferName];
+                source.connect(audioContext.destination);
+                source.start();
+
+                const bufferDuration = source.buffer.duration;
+                logMessage(`${bufferName} played successfully.`);
+                return new Promise(resolve => setTimeout(resolve, (bufferDuration + delayAfter) * 1000));
+            } catch (error) {
+                logMessage(`Error playing ${bufferName}: ${error}`);
+            }
         }
 
         document.getElementById('startButton').addEventListener('click', async () => {
@@ -92,9 +93,9 @@
             // Initialize audio buffers and start session flow
             await initAudio();
 
-            // Play Intro and Prompt1 with enforced 5-second delay between
-            playAudioBuffer('Intro');
-            playAudioBuffer('Prompt1', 5); // Enforced delay of 5 seconds after Intro
+            // Play Intro, wait for it to finish, then play Prompt1 with 5-second enforced delay after Intro
+            await playAudioBuffer('Intro');
+            await playAudioBuffer('Prompt1', 5); // Enforced 5-second delay after Intro completes
 
             // After Prompt1, capture user response
             logMessage("Prompt 1 segment should have played; moving to user input capture...");
