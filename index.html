@@ -10,16 +10,13 @@
     <p>Make sure you're in a quiet, comfortable space.</p>
     <button id="startButton">Start Session</button>
 
-    <!-- Section to display logs -->
-    <div id="log" style="margin-top: 20px; font-weight: bold;"></div>
-
     <script>
         function logMessage(message) {
-            // Display messages on the webpage for debugging
-            document.getElementById('log').innerText += message + "\n";
+            // Display essential logs in the console (no longer on the page)
+            console.log(message);
         }
 
-        // Create a single audio element for playback
+        // Single audio element for consistent playback
         const audio = new Audio();
 
         document.getElementById('startButton').addEventListener('click', async () => {
@@ -29,19 +26,17 @@
             await playText("Take a deep breath in and out.");
             logMessage("First message played");
 
-            // Shorter pause for troubleshooting (5 seconds instead of 20)
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            // Pause before second message
+            await new Promise(resolve => setTimeout(resolve, 20000)); // 20-second pause
             logMessage("Pause complete");
 
-            // Attempt to play the second message
-            await playTextWithRetry("Take a deep breath in and out.", 3);
-            logMessage("Second message played (or retries exhausted)");
+            // Second instruction
+            await playText("What are you noticing? Is the mind quieting down or are other things happening?");
+            logMessage("Second message played");
         });
 
         async function playText(text) {
             try {
-                logMessage(`Requesting TTS for: "${text}"`);
-
                 // Google TTS API URL
                 const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`;
 
@@ -55,47 +50,22 @@
                         audioConfig: { audioEncoding: "MP3" }
                     })
                 });
-                logMessage("API request sent.");
 
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.statusText}`);
-                }
-
-                // Parse the response JSON and extract the audio content
                 const data = await response.json();
                 const audioContent = data.audioContent;
 
-                if (!audioContent) {
-                    throw new Error("No audio content received from API");
-                }
-                logMessage("Audio content received.");
-
-                // Set the audio source and load it explicitly
+                // Set and play the audio content
                 audio.src = `data:audio/mp3;base64,${audioContent}`;
                 audio.load();
                 audio.play();
-                logMessage("Audio playback started.");
 
-                // Wait for the audio to finish before moving to the next instruction
+                // Wait for audio to finish before proceeding
                 return new Promise(resolve => {
                     audio.onended = resolve;
                 });
             } catch (error) {
-                logMessage(`Error in playText: ${error.message}`);
-                throw error; // Re-throw to allow retry in playTextWithRetry
+                logMessage(`Error: ${error.message}`);
             }
-        }
-
-        async function playTextWithRetry(text, retries) {
-            for (let attempt = 1; attempt <= retries; attempt++) {
-                try {
-                    await playText(text);
-                    return; // Success, exit the function
-                } catch (error) {
-                    logMessage(`Retrying... Attempt ${attempt} of ${retries}`);
-                }
-            }
-            logMessage("All retry attempts failed.");
         }
     </script>
 </body>
