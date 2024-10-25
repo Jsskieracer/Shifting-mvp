@@ -13,6 +13,7 @@
     <script>
         const audio = new Audio();
         let mediaStream; // Global variable to maintain microphone access
+        let recordingActive = false; // Flag to indicate recording activity
 
         document.getElementById('startButton').addEventListener('click', async () => {
             console.log("Session starting...");
@@ -38,9 +39,8 @@
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
             console.log("Second message played");
 
-            // Ensure recording starts only after the entire prompt and additional wait time
-            await new Promise(resolve => setTimeout(resolve, 3000));  // 3-second delay before recording
-            const userResponse = await captureUserInput();
+            // Start capturing user input dynamically
+            const userResponse = await captureUserInputDynamic();
             console.log(`User response: ${userResponse}`);
 
             // Get GPT's response and play it
@@ -75,7 +75,7 @@
             }
         }
 
-        async function captureUserInput() {
+        async function captureUserInputDynamic() {
             try {
                 if (!mediaStream) {
                     throw new Error("Microphone access not available");
@@ -84,44 +84,45 @@
                 const recorder = new MediaRecorder(mediaStream);
                 const chunks = [];
                 let silenceTimeout;
+                let speakingDetected = false;
 
                 recorder.ondataavailable = event => chunks.push(event.data);
 
-                // Start recording and set a max recording time of 10 seconds
-                recorder.start();
-                console.log("Recording audio...");
+                const audioContext = new AudioContext();
+                const source = audioContext.createMediaStreamSource(mediaStream);
+                const analyser = audioContext.createAnalyser();
+                source.connect(analyser);
 
-                // Stop recording if silence is detected for 3 seconds, or after 10 seconds max
                 const silenceDetectionPromise = new Promise(resolve => {
-                    const audioContext = new AudioContext();
-                    const source = audioContext.createMediaStreamSource(mediaStream);
-                    const analyser = audioContext.createAnalyser();
-                    source.connect(analyser);
-
-                    const detectSilence = () => {
+                    function detectSilence() {
                         const data = new Uint8Array(analyser.frequencyBinCount);
                         analyser.getByteFrequencyData(data);
                         const avgVolume = data.reduce((sum, value) => sum + value) / data.length;
 
-                        if (avgVolume < 10) { // Adjust the threshold for detecting silence
+                        if (avgVolume > 10) { // Adjust threshold for speech detection
+                            if (!speakingDetected) {
+                                console.log("Speech detected, starting recording...");
+                                recorder.start(); // Start recording once speech is detected
+                                speakingDetected = true;
+                            }
+                            clearTimeout(silenceTimeout); // Reset silence detection
+                        } else if (speakingDetected) {
+                            // Silence detected after speech, set up timeout to end recording
                             silenceTimeout = setTimeout(() => {
-                                recorder.stop();
-                                resolve();
-                            }, 3000); // 3 seconds of silence
-                        } else {
-                            clearTimeout(silenceTimeout);
+                                if (recorder.state === "recording") {
+                                    recorder.stop();
+                                    console.log("Silence detected, stopping recording...");
+                                    resolve();
+                                }
+                            }, 3000); // End recording after 3 seconds of silence
                         }
-                        requestAnimationFrame(detectSilence);
-                    };
-                    detectSilence();
 
-                    // Set a max recording time of 10 seconds
-                    setTimeout(() => {
-                        if (recorder.state === "recording") {
-                            recorder.stop();
-                            resolve();
+                        if (!speakingDetected || recorder.state === "recording") {
+                            requestAnimationFrame(detectSilence);
                         }
-                    }, 10000); // 10 seconds max recording time
+                    }
+
+                    detectSilence();
                 });
 
                 await silenceDetectionPromise;
