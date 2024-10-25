@@ -107,14 +107,9 @@
             const userResponse = await captureUserInputDynamic();
             logMessage("User response captured: " + userResponse);
 
-            // Check for a calm response and play the appropriate audio buffer
-            if (checkForCalmResponse(userResponse)) {
-                logMessage("Calm response detected; playing CalmResponse segment...");
-                await playAudioBuffer('Calm_response');
-            } else {
-                logMessage("No calm response; playing SupportiveResponse segment...");
-                await playAudioBuffer('Supportive_response');
-            }
+            // Force triggering CalmResponse for debugging
+            logMessage("Forcing calm response for testing...");
+            await playAudioBuffer('Calm_response');
         });
 
         async function captureUserInputDynamic() {
