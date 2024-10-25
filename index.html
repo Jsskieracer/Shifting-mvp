@@ -56,19 +56,20 @@
             }
         }
 
-        // Play an audio buffer and apply delay only after the buffer completes
+        // Play an audio buffer and add a delay only after the buffer completes
         async function playAudioBuffer(bufferName, delayAfter = 0) {
             try {
                 const source = audioContext.createBufferSource();
                 source.buffer = audioBuffers[bufferName];
                 source.connect(audioContext.destination);
                 source.start();
-                
-                logMessage(`${bufferName} played successfully.`);
+
+                logMessage(`${bufferName} started playing.`);
 
                 // Wait for the buffer's duration + delayAfter before resolving
                 const bufferDuration = source.buffer.duration;
                 await new Promise(resolve => setTimeout(resolve, (bufferDuration + delayAfter) * 1000));
+                logMessage(`${bufferName} finished playing, waiting ${delayAfter} seconds.`);
             } catch (error) {
                 logMessage(`Error playing ${bufferName}: ${error}`);
             }
