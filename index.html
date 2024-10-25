@@ -17,7 +17,7 @@
 </head>
 <body>
     <h1>Welcome to Your Shifting Session</h1>
-    <p>Make sure you're in a quiet, comfortable space.</p>
+    <p>Make sure you're in a quiet, comfortable space and your AirPods are connected.</p>
     <button id="startButton">Start Session</button>
     <div id="log"></div>
 
@@ -29,11 +29,14 @@
             logElement.scrollTop = logElement.scrollHeight;
         }
 
-        // Function to play audio from GitHub repository
+        // Function to play audio from GitHub repository with added error handling
         async function playAudioSegment(segmentName) {
-            const audio = new Audio(`https://raw.githubusercontent.com/Jsskieracer/Shifting-mvp/main/audio/${segmentName}.m4a`);
-            await audio.play();
-            logMessage(`${segmentName} played.`);
+            try {
+                const audio = new Audio(`https://raw.githubusercontent.com/Jsskieracer/Shifting-mvp/main/audio/${segmentName}.m4a`);
+                await audio.play().then(() => logMessage(`${segmentName} played.`)).catch(err => logMessage(`Error playing ${segmentName}: ${err}`));
+            } catch (error) {
+                logMessage(`Error in playAudioSegment for ${segmentName}: ${error}`);
+            }
         }
 
         let mediaStream;
@@ -51,11 +54,12 @@
 
             // Start session flow with pre-recorded audio segments
             await playAudioSegment('Intro');
-            logMessage("Intro segment played.");
+            logMessage("Intro segment attempted.");
+
             await new Promise(resolve => setTimeout(resolve, 5000));
 
             await playAudioSegment('Prompt1');
-            logMessage("Prompt 1 segment played.");
+            logMessage("Prompt 1 segment attempted.");
 
             const userResponse = await captureUserInputDynamic();
             logMessage("User response captured: " + userResponse);
