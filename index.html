@@ -3,48 +3,67 @@
 <head>
     <meta charset="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shifting Session</title>
+    <style>
+        #log { 
+            white-space: pre-wrap; 
+            background-color: #f0f0f0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            margin-top: 20px; 
+        }
+    </style>
 </head>
 <body>
     <h1>Welcome to Your Shifting Session</h1>
     <p>Make sure you're in a quiet, comfortable space.</p>
     <button id="startButton">Start Session</button>
+    <div id="log"></div>
 
     <script>
+        const logElement = document.getElementById("log");
+
+        function logMessage(message) {
+            logElement.textContent += message + "\n";
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
         let mediaStream;
         let audio = new Audio();
 
         document.getElementById('startButton').addEventListener('click', async () => {
-            console.log("Session starting...");
+            logMessage("Session starting...");
 
             try {
                 mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                console.log("Microphone access granted");
+                logMessage("Microphone access granted");
             } catch (error) {
-                console.error("Microphone access denied:", error);
+                logMessage("Microphone access denied: " + error);
                 return;
             }
 
             await playText("Take a deep breath in and out.");
-            console.log("First prompt played.");
+            logMessage("First prompt played.");
             await new Promise(resolve => setTimeout(resolve, 5000));
 
             await playText("What are you noticing? Is the mind quieting down or are other things happening?");
-            console.log("Second prompt played.");
+            logMessage("Second prompt played.");
 
             const userResponse = await captureUserInputDynamic();
-            console.log("User response captured:", userResponse);
+            logMessage("User response captured: " + userResponse);
 
             let responseText;
             if (checkForCalmResponse(userResponse)) {
                 responseText = "Great, we’re complete.";
-                console.log("Calm response detected, using default response.");
+                logMessage("Calm response detected, using default response.");
             } else {
                 responseText = await getGptResponse(userResponse);
-                console.log("GPT response received:", responseText);
+                logMessage("GPT response received: " + responseText);
             }
 
             await playText(responseText);
-            console.log("Final response played.");
+            logMessage("Final response played.");
         });
 
         async function playText(text) {
@@ -66,9 +85,9 @@
                 audio.src = `data:audio/mp3;base64,${audioContent}`;
                 audio.load();
                 await audio.play();
-                console.log("Audio playback complete.");
+                logMessage("Audio playback complete.");
             } catch (error) {
-                console.error("Error in playText function:", error);
+                logMessage("Error in playText function: " + error);
             }
         }
 
@@ -85,7 +104,7 @@
                 const analyser = audioContext.createAnalyser();
                 source.connect(analyser);
 
-                console.log("Starting real-time silence detection.");
+                logMessage("Starting real-time silence detection.");
                 const silenceDetectionPromise = new Promise(resolve => {
                     function detectSilence() {
                         const data = new Uint8Array(analyser.frequencyBinCount);
@@ -95,7 +114,7 @@
                         if (avgVolume > 10) {
                             if (!speakingDetected) {
                                 recorder.start();
-                                console.log("Speech detected, recording started.");
+                                logMessage("Speech detected, recording started.");
                                 speakingDetected = true;
                             }
                             clearTimeout(silenceTimeout);
@@ -103,7 +122,7 @@
                             silenceTimeout = setTimeout(() => {
                                 if (recorder.state === "recording") {
                                     recorder.stop();
-                                    console.log("Silence detected, recording stopped.");
+                                    logMessage("Silence detected, recording stopped.");
                                     resolve();
                                 }
                             }, 3000);
@@ -134,11 +153,11 @@
 
                 const data = await response.json();
                 const transcription = data.results?.[0]?.alternatives?.[0]?.transcript || "No response detected.";
-                console.log("Transcription received:", transcription);
+                logMessage("Transcription received: " + transcription);
                 return transcription;
 
             } catch (error) {
-                console.error("Error capturing or transcribing audio:", error);
+                logMessage("Error capturing or transcribing audio: " + error);
                 return "Error capturing audio.";
             }
         }
@@ -170,10 +189,11 @@
                 });
 
                 const data = await response.json();
+                logMessage("GPT response: " + data.choices[0].text.trim());
                 return data.choices[0].text.trim();
 
             } catch (error) {
-                console.error("Error in getGptResponse function:", error);
+                logMessage("Error in getGptResponse function: " + error);
                 return "I'm here to support you. Let’s continue with some deep breaths.";
             }
         }
@@ -181,7 +201,7 @@
         function checkForCalmResponse(response) {
             const calmKeywords = ["calm", "peaceful", "relaxed", "quiet", "still"];
             const detected = calmKeywords.some(keyword => response.toLowerCase().includes(keyword));
-            console.log("Calm response check:", detected);
+            logMessage("Calm response check: " + detected);
             return detected;
         }
     </script>
