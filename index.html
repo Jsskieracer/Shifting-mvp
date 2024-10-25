@@ -11,10 +11,45 @@
     <button id="startButton">Start Session</button>
 
     <script>
-        document.getElementById('startButton').addEventListener('click', () => {
-            // This is where we'll add the text-to-speech functionality later
-            alert('Session is starting...');
+        document.getElementById('startButton').addEventListener('click', async () => {
+            // First instruction: Take a deep breath in and out
+            await playText("Take a deep breath in and out.");
+
+            // Pause for 20 seconds
+            await new Promise(resolve => setTimeout(resolve, 20000));
+
+            // Second instruction: Ask what the user is noticing
+            await playText("What are you noticing? Is the mind quieting down or are other things happening?");
         });
+
+        async function playText(text) {
+            // Google TTS API URL
+            const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`;
+
+            // Prepare the request payload for Google TTS API
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    input: { text: text },
+                    voice: { languageCode: "en-US", name: "en-US-Wavenet-D" },
+                    audioConfig: { audioEncoding: "MP3" }
+                })
+            });
+
+            // Parse the response JSON and extract the audio content
+            const data = await response.json();
+            const audioContent = data.audioContent;
+
+            // Create an audio element to play the audio
+            const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
+            audio.play();
+
+            // Wait for the audio to finish before moving to the next instruction
+            return new Promise(resolve => {
+                audio.onended = resolve;
+            });
+        }
     </script>
 </body>
 </html>
