@@ -205,19 +205,30 @@
         }
 
         async function fetchGoogleApiKey() {
-            try {
-                const response = await fetch("https://shifting-mvp.vercel.app/api/googleApiKey", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" }
-                });
+    try {
+        const response = await fetch("https://shifting-mvp.vercel.app/api/googleApiKey", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
 
-                const data = await response.json();
-                return data.googleApiKey;
-            } catch (error) {
-                logMessage("Error fetching Google API key: " + error);
-                return null;
-            }
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
+
+        const data = await response.json();
+        logMessage("Raw response data: " + JSON.stringify(data)); // Log raw response
+        if (data.googleApiKey) {
+            logMessage("Google API Key retrieved successfully.");
+            return data.googleApiKey;
+        } else {
+            logMessage("Google API Key missing in response.");
+            return null;
+        }
+    } catch (error) {
+        logMessage("Error fetching Google API key: " + error.message);
+        return null;
+    }
+}
 
         async function analyzeWithGPT(transcription) {
             try {
