@@ -270,7 +270,7 @@
                 const audioBase64 = await blobToBase64(audioBlob);
 
                 logMessage("Sending audio for transcription...");
-                const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=YOUR_GOOGLE_API_KEY`, {
+                const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
