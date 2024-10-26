@@ -22,7 +22,7 @@ async function initAudio() {
 
 async function loadAudioBuffer(fileName) {
     try {
-        const response = await fetch(`https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPOSITORY/main/audio/${fileName}.mp3`);
+        const response = await fetch(`https://raw.githubusercontent.com/Jsskieracer/Shifting-mvp/main/audio/${fileName}.mp3`);
         const arrayBuffer = await response.arrayBuffer();
         return await audioContext.decodeAudioData(arrayBuffer);
     } catch (error) {
