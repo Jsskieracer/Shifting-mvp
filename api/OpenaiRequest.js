@@ -27,8 +27,10 @@ export default async function handler(req, res) {
         const data = await response.json();
         console.log("OpenAI API response: " + JSON.stringify(data));
 
+        // Check if response contains the expected data
         if (data.choices && data.choices[0] && data.choices[0].text) {
-            res.status(200).json({ text: data.choices[0].text.trim() });
+            const text = data.choices[0].text.trim();
+            res.status(200).json({ text });
         } else {
             console.error("Invalid OpenAI response structure.");
             res.status(500).json({ error: "Invalid OpenAI response structure" });
