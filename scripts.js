@@ -172,7 +172,9 @@ async function analyzeWithGPT(transcription) {
         //     throw new Error(`Error analyzing response with GPT: HTTP ${response.status} ${response.statusText}, Details: ${errorDetails}`);
         // }
 
+        console.log("analyzeWithGPT response=", response);
         const data = await response.json();
+        console.log("analyzeWithGPT data=", data);
         const gptText = data.text?.trim().toLowerCase();
         logMessage("GPT analysis response: " + gptText);
         return gptText === "calm";
