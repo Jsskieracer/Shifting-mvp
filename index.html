@@ -254,10 +254,10 @@
         const data = await response.json();
         logMessage("Full GPT Response: " + JSON.stringify(data));
 
-        // Check if response has 'choices' array with expected text
-        const gptText = data.choices?.[0]?.text.trim().toLowerCase();
+        // Extract the GPT response text
+        const gptText = data.text?.trim().toLowerCase();
         if (!gptText) {
-            throw new Error("Invalid response from GPT: No valid 'choices' data found.");
+            throw new Error("Invalid response from GPT: No valid 'text' data found.");
         }
 
         logMessage("GPT analysis response: " + gptText);
