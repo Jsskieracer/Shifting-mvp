@@ -155,3 +155,36 @@ async function analyzeWithGPT(transcription) {
         return false;
     }
 }
+
+async function captureDynamicInput() {
+    return new Promise((resolve, reject) => {
+        try {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            logMessage("Starting speech recognition...");
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                logMessage("Speech recognition result: " + transcript);
+                resolve(transcript);
+            };
+
+            recognition.onspeechend = () => {
+                logMessage("Speech recognition ended.");
+                recognition.stop();
+            };
+
+            recognition.onerror = (event) => {
+                logMessage("Speech recognition error: " + event.error);
+                reject(event.error);
+            };
+        } catch (error) {
+            logMessage("Error starting speech recognition: " + error);
+            reject(error);
+        }
+    });
+}
