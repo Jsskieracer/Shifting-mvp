@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
         const transcription = req.body;
 
-        console.log("Received transcription:", transcription);
+        console.log("Received transcription:", transcription.transcription);
 
         // Send the request to OpenAI with an updated model
         const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
