@@ -12,7 +12,25 @@
     <div id="overview">
         <h2>Product Overview</h2>
         <p><strong>Last Update:</strong> October 25, 2024</p>
-        <!-- Overview Content Here -->
+        <p><strong>Current Features:</strong>
+            <ul>
+                <li>Automated audio-guided meditation with dynamically timed user interactions.</li>
+                <li>Real-time speech detection and transcription using browser-based Speech Recognition API.</li>
+                <li>Analysis of user responses using GPT to interpret if the user feels calm or not.</li>
+                <li>Microphone access for capturing user feedback, with dynamic silence detection for optimal user experience.</li>
+                <li>Integration with Google Cloud and OpenAI APIs for advanced processing of user data.</li>
+                <li>User-friendly interface with an option to start and stop sessions.</li>
+                <li>Detailed logging for troubleshooting and development purposes.</li>
+            </ul>
+        </p>
+        <p><strong>Product Architecture:</strong> The front end is a simple HTML, CSS, and JavaScript page deployed using Vercel, which also hosts serverless functions for handling API requests. Key serverless functions include:
+            <ul>
+                <li><strong>googleApiKey.js:</strong> Manages retrieval of the Google Speech-to-Text API key.</li>
+                <li><strong>OpenaiRequest.js:</strong> Communicates with the OpenAI GPT API to analyze user transcriptions.</li>
+            </ul>
+        </p>
+        <p>The product’s workflow involves guiding users through a relaxation process, capturing their responses, and adjusting the session based on user feedback, all while ensuring that users can keep their eyes closed throughout the experience.</p>
+        <p>This version includes improved error handling, detailed logging, and CORS configurations for seamless API communication, with an emphasis on creating a smooth, interruption-free user experience.</p>
     </div>
 
     <div class="container">
