@@ -10,12 +10,14 @@ export default async function handler(req, res) {
         // console.error("OpenAI transcription:", req.body);
 
         // Parse the body to get the transcription
-        const { transcription } = req.body || {};
+        // const { transcription } = req.body || {};
 
         // if (!transcription) {
         //     console.error("No transcription provided in the request body:", req.body);
         //     return res.status(400).json({ error: 'No transcription provided' });
         // }
+
+        const transcription = req.body;
 
         console.log("Received transcription:", transcription);
 
