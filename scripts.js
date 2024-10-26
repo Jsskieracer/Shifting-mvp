@@ -47,6 +47,17 @@ async function playAudioBuffer(bufferName, delayAfter = 0) {
     }
 }
 
+async function requestMicrophoneAccess() {
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        logMessage("Microphone access granted");
+    } catch (error) {
+        logMessage("Microphone access denied: " + error);
+        return false;
+    }
+    return true;
+}
+
 async function toggleSession() {
     if (startButton.classList.contains("active")) {
         endSession();
@@ -62,11 +73,10 @@ async function toggleSession() {
     }
 
     logMessage("Session starting...");
-    try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        logMessage("Microphone access granted");
-    } catch (error) {
-        logMessage("Microphone access denied: " + error);
+
+    const micAccessGranted = await requestMicrophoneAccess();
+    if (!micAccessGranted) {
+        endSession();
         return;
     }
 
