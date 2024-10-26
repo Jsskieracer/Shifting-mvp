@@ -1,21 +1,27 @@
-export default async function handler(req, res) {
-    console.log("Google API key request received.");
+async function fetchGoogleApiKey() {
+    try {
+        const response = await fetch("https://shifting-mvp.vercel.app/api/googleApiKey", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            mode: "cors"
+        });
 
-    // Add CORS headers
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-    if (req.method === "OPTIONS") {
-        // Respond to preflight requests
-        return res.status(200).end();
-    }
+        const data = await response.json();
 
-    if (process.env.GOOGLE_API_KEY) {
-        console.log("Google API key found and returned.");
-        res.status(200).json({ googleApiKey: process.env.GOOGLE_API_KEY });
-    } else {
-        console.error("Google API key not found in environment variables.");
-        res.status(500).json({ error: "Google API key not found" });
+        if (data.googleApiKey) {
+            return data.googleApiKey;
+        } else {
+            throw new Error("Google API key not found in response.");
+        }
+    } catch (error) {
+        logMessage("Error fetching Google API key: " + error.message);
+        return null;
     }
 }
