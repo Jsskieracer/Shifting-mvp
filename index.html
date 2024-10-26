@@ -205,13 +205,19 @@
                 });
 
                 const data = await response.json();
-                const gptText = data.choices?.[0]?.text.trim().toLowerCase();
-                logMessage("GPT analysis response: " + gptText);
+                logMessage("Full GPT Response: " + JSON.stringify(data)); // Log full response for debugging
 
+                // Check if response has 'choices' array with expected text
+                const gptText = data.choices?.[0]?.text.trim().toLowerCase();
+                if (!gptText) {
+                    throw new Error("Invalid response from GPT: No valid 'choices' data found.");
+                }
+
+                logMessage("GPT analysis response: " + gptText);
                 return gptText === "calm";
             } catch (error) {
-                logMessage("Error analyzing response with GPT: " + error);
-                return false;
+                logMessage("Error analyzing response with GPT: " + error.message);
+                return false;  // Default to "not calm" if GPT analysis fails
             }
         }
 
@@ -239,7 +245,7 @@
                         analyser.getByteFrequencyData(data);
                         const avgVolume = data.reduce((sum, value) => sum + value) / data.length;
 
-                        if (avgVolume > 15) {
+                        if (avgVolume > 10) {
                             if (!speakingDetected) {
                                 recorder.start();
                                 logMessage("Speech detected, recording started.");
@@ -270,7 +276,7 @@
                 const audioBase64 = await blobToBase64(audioBlob);
 
                 logMessage("Sending audio for transcription...");
-                const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=AIzaSyB9vYO8pDd_-2LlbRdpV-8FC0YzVYk9f_0`, {
+                const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=YOUR_GOOGLE_API_KEY`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
