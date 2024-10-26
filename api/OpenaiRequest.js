@@ -17,16 +17,21 @@ export default async function handler(req, res) {
 
         console.log("Received transcription:", transcription);
 
-        // Send the request to OpenAI
-        const openaiResponse = await fetch('https://api.openai.com/v1/completions', {
+        // Send the request to OpenAI with an updated model
+        const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: 'text-davinci-003',
-                prompt: `Analyze the following transcription and determine if the user feels calm: "${transcription}". Answer only with "calm" or "not calm".`,
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    {
+                        role: 'user',
+                        content: `Analyze the following transcription and determine if the user feels calm: "${transcription}". Answer only with "calm" or "not calm".`
+                    }
+                ],
                 max_tokens: 10,
                 temperature: 0.5,
             }),
@@ -39,7 +44,7 @@ export default async function handler(req, res) {
         }
 
         const data = await openaiResponse.json();
-        const gptResponse = data.choices[0]?.text?.trim();
+        const gptResponse = data.choices[0]?.message?.content?.trim();
 
         console.log("OpenAI response text:", gptResponse);
         res.status(200).json({ text: gptResponse });
