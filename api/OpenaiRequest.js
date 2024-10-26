@@ -7,15 +7,15 @@ export default async function handler(req, res) {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        console.error("OpenAI transcription:", req.body);
+        // console.error("OpenAI transcription:", req.body);
 
         // Parse the body to get the transcription
         const { transcription } = req.body || {};
 
-        if (!transcription) {
-            console.error("No transcription provided in the request body:", req.body);
-            return res.status(400).json({ error: 'No transcription provided' });
-        }
+        // if (!transcription) {
+        //     console.error("No transcription provided in the request body:", req.body);
+        //     return res.status(400).json({ error: 'No transcription provided' });
+        // }
 
         console.log("Received transcription:", transcription);
 
