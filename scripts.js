@@ -158,10 +158,12 @@ async function fetchGoogleApiKey() {
 async function analyzeWithGPT(transcription) {
     try {
         logMessage("Starting GPT analysis for transcription: " + transcription);
-        const response = await fetch("https://shifting-mvp.vercel.app/api/OpenaiRequest", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ transcription }), // Ensure this matches the backend expectation
+        const response = await fetch("https://your-vercel-deployment-url.vercel.app/api/OpenaiRequest", {
+            method: "POST", // Ensure this is set to POST
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ transcription }), // Ensure this body is being sent
         });
 
         if (!response.ok) {
