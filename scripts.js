@@ -164,6 +164,7 @@ async function analyzeWithGPT(transcription) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ transcription }), // Ensure this body is being sent
+            mode: "no-cors",
         });
 
         if (!response.ok) {
