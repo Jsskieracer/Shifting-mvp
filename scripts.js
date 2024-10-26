@@ -117,6 +117,13 @@ function endSession() {
         mediaStream.getTracks().forEach(track => track.stop());
         logMessage("Microphone turned off.");
     }
+
+    // Manually releasing the audio context resources if needed
+    if (audioContext) {
+        audioContext.close();
+        logMessage("Audio context closed.");
+    }
+
     logMessage("Session complete; stopping silence detection logging.");
 }
 
