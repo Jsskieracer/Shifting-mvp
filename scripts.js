@@ -161,11 +161,12 @@ async function analyzeWithGPT(transcription) {
         const response = await fetch("https://shifting-mvp.vercel.app/api/OpenaiRequest", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ transcription }),
+            body: JSON.stringify({ transcription }), // Ensure this matches the backend expectation
         });
 
         if (!response.ok) {
-            throw new Error(`Error analyzing response with GPT: HTTP ${response.status} ${response.statusText}`);
+            const errorDetails = await response.text();
+            throw new Error(`Error analyzing response with GPT: HTTP ${response.status} ${response.statusText}, Details: ${errorDetails}`);
         }
 
         const data = await response.json();
