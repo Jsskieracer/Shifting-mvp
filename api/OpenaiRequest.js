@@ -1,21 +1,13 @@
 const fetch = require('node-fetch');
 
 export default async function handler(req, res) {
-    const { transcription, googleApiRequest } = req.body;
+    const { transcription } = req.body;
 
-    if (googleApiRequest) {
-        console.log("Google API key requested.");
-        if (process.env.GOOGLE_API_KEY) {
-            console.log("Google API key found and returned.");
-            res.status(200).json({ googleApiKey: process.env.GOOGLE_API_KEY });
-        } else {
-            console.error("Google API key not found in environment variables.");
-            res.status(500).json({ error: "Google API key not found" });
-        }
-        return;
+    if (!transcription) {
+        return res.status(400).json({ error: "No transcription provided" });
     }
 
-    if (transcription) {
+    try {
         const response = await fetch("https://api.openai.com/v1/completions", {
             method: "POST",
             headers: {
@@ -32,8 +24,8 @@ export default async function handler(req, res) {
 
         const data = await response.json();
         res.status(200).json(data);
-    } else {
-        console.error("No transcription or googleApiRequest specified");
-        res.status(400).json({ error: "No transcription or googleApiRequest specified" });
+    } catch (error) {
+        console.error("Error with OpenAI API:", error);
+        res.status(500).json({ error: "Error with OpenAI API" });
     }
 }
