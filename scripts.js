@@ -113,14 +113,19 @@ function endSession() {
     silenceDetectionActive = false;
     startButton.classList.remove("active");
     startButton.textContent = "Start Session";
+    
     if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-        logMessage("Microphone turned off.");
+        mediaStream.getTracks().forEach(track => {
+            track.stop();
+            track.enabled = false;
+        });
+        mediaStream = null; // Explicitly set to null
+        logMessage("Microphone turned off and tracks disabled.");
     }
 
-    // Manually releasing the audio context resources if needed
     if (audioContext) {
         audioContext.close();
+        audioContext = null; // Explicitly set to null
         logMessage("Audio context closed.");
     }
 
