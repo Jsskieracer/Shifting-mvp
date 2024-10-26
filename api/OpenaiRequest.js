@@ -17,9 +17,9 @@ export default async function handler(req, res) {
         //     return res.status(400).json({ error: 'No transcription provided' });
         // }
 
-        const transcription = req.body;
+        const transcription = req.body.transcription;
 
-        console.log("Received transcription:", transcription.transcription);
+        console.log("Received transcription:", transcription);
 
         // Send the request to OpenAI with an updated model
         const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
