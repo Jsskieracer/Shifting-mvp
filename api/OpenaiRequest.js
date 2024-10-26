@@ -2,8 +2,10 @@ const fetch = require('node-fetch');
 
 export default async function handler(req, res) {
     const { transcription } = req.body;
+    console.log("Received transcription for analysis: " + transcription);
 
     if (!transcription) {
+        console.error("No transcription provided.");
         return res.status(400).json({ error: "No transcription provided" });
     }
 
@@ -23,9 +25,16 @@ export default async function handler(req, res) {
         });
 
         const data = await response.json();
-        res.status(200).json(data);
+        console.log("OpenAI API response: " + JSON.stringify(data));
+
+        if (data.choices && data.choices[0] && data.choices[0].text) {
+            res.status(200).json({ text: data.choices[0].text.trim() });
+        } else {
+            console.error("Invalid OpenAI response structure.");
+            res.status(500).json({ error: "Invalid OpenAI response structure" });
+        }
     } catch (error) {
-        console.error("Error with OpenAI API:", error);
-        res.status(500).json({ error: "Error with OpenAI API" });
+        console.error("Error communicating with OpenAI API:", error);
+        res.status(500).json({ error: "Error communicating with OpenAI API" });
     }
 }
