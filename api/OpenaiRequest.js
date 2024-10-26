@@ -7,6 +7,8 @@ export default async function handler(req, res) {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
+        console.error("OpenAI transcription:", req.body);
+
         // Parse the body to get the transcription
         const { transcription } = req.body || {};
 
