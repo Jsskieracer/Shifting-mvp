@@ -7,7 +7,7 @@ export default async function handler(req, res) {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        // Ensure that the body is parsed correctly
+        // Parse the body to get the transcription
         const { transcription } = req.body || {};
 
         if (!transcription) {
