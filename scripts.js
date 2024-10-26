@@ -167,10 +167,10 @@ async function analyzeWithGPT(transcription) {
             mode: "no-cors",
         });
 
-        if (!response.ok) {
-            const errorDetails = await response.text();
-            throw new Error(`Error analyzing response with GPT: HTTP ${response.status} ${response.statusText}, Details: ${errorDetails}`);
-        }
+        // if (!response.ok) {
+        //     const errorDetails = await response.text();
+        //     throw new Error(`Error analyzing response with GPT: HTTP ${response.status} ${response.statusText}, Details: ${errorDetails}`);
+        // }
 
         const data = await response.json();
         const gptText = data.text?.trim().toLowerCase();
